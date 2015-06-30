@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Simple OBJ Viewer</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 
 <script id="vertex-shader" type="x-shader/x-vertex">
@@ -12,7 +12,7 @@ attribute  vec4 a_Position;
 void main()
 {
     gl_Position = a_Position;
-    gl_PointSize = 6.0;
+    gl_PointSize = 5.0;
 }
 </script>
 
@@ -31,23 +31,31 @@ void main()
 
 <body>
 
-<p>
-<canvas id="gl-canvas1" width="200" height="200">
-Oops ... your browser doesn't support the HTML5 canvas element
-</canvas>
-</p>
-
-<p>
-<canvas id="gl-canvas2" width="200" height="200">
-Oops ... your browser doesn't support the HTML5 canvas element
-</canvas>
-</p>
-
-<p>
-<canvas id="gl-canvas3" width="200" height="200">
-Oops ... your browser doesn't support the HTML5 canvas element
-</canvas>
-</p>
-
+<div id="viewport">
+    <div class="content" id="content-1">
+        <div class="title" id="title-1">                
+            <p class="title-canvas">B-Spline</p>
+        </div>            
+        <canvas class="gl-canvas" id="gl-canvas1" height="200">
+            Oops ... your browser doesn't support the HTML5 canvas element 
+        </canvas>
+    </div>
+    <div class="content" id="content-2">
+    <div class="title" id="title-2">                
+        <p class="title-canvas">RaG</p>
+        </div>
+    	    <canvas class="gl-canvas" id="gl-canvas2" height="200">
+               Oops ... your browser doesn't support the HTML5 canvas element
+           </canvas>            
+       </div>    
+    <div class="content" id="content-3">
+        <div class="title" id="title-3">
+            <p class="title-canvas">Extrusão em 3D</p>
+        </div>            
+        <canvas class="gl-canvas" id="gl-canvas3" height="200">
+            Oops ... your browser doesn't support the HTML5 canvas element
+        </canvas>
+     </div>        
+</div>
 </body>
 </html>
