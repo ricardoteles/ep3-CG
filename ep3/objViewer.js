@@ -11,11 +11,13 @@ window.onload = function init() {
 	initializeCanvas(canvas1, 1, gl1, program1, g_points1);		// initialize canvas1
 	initializeCanvas(canvas2, 2, gl2, program2, g_points2);		// initialize canvas2
 	initializeCanvas(canvas3, 3, gl3, program3, g_points3);		// initialize canvas3
-	// bSpline(canvas1, g_points1);
+	// bSpline(canvas1, g_points1);	
+
 }
 
 function initializeCanvas (canvas, numCanvas, gl, program, g_points){
-	canvas = document.getElementById( "gl-canvas"+numCanvas );
+	canvas 		= document.getElementById( "gl-canvas"+numCanvas );
+	btnClear 	= document.getElementById("btnReset"+numCanvas);	
 
 	gl = WebGLUtils.setupWebGL( canvas );
 	if ( !gl ) { alert( "WebGL isn't available" ); }
@@ -35,8 +37,16 @@ function initializeCanvas (canvas, numCanvas, gl, program, g_points){
 		}
 
 		canvas.onclick = function(ev){ 
+			console.log(g_points);
 			click(ev, gl, canvas, a_Position, g_points); 
 		};
+
+		btnClear.onclick = function(ev){
+
+			g_points = [];
+			gl.clear(gl.COLOR_BUFFER_BIT);
+
+		}
 	}
 
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -64,7 +74,6 @@ function click(ev, gl, canvas, a_Position, g_points) {
 	}
 }
 
-
 //Precisa arrumar a funao bSpline
 function bSpline(gl, p) {
 
@@ -86,3 +95,5 @@ function bSpline(gl, p) {
 
   // desenhar os pontos
 }
+
+
