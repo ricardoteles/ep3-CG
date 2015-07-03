@@ -2,15 +2,19 @@ var canvas1, canvas2, canvas3;
 var gl1, gl2, gl3;
 var program1, program2, program3;
 var g_points1 = [];
-var g_points2 = []; 
+var g_points2 = [];
+var sigma = 0; 
 // var g_points3 = [];
+
 var bsInfo1 = {
 	grau: 3,
-	nPtsContr: 0
+	nPtsContr: 0,
+	numSeg: 5
 };
 var bsInfo2 = {
 	grau: 3,
-	nPtsContr: 0
+	nPtsContr: 0,
+	numSeg: 5
 };
 
 /********************* testes ******************/
@@ -84,8 +88,10 @@ window.onload = function init() {
     btnOk.onclick = function(ev) {
             //RaG(canvas1, g_points1);
             sigma = stDeviation.value;
-            console.log(sigma);
-            main();
+            bsInfo1.grau = dgPolynomial.value;
+            console.log(bsInfo1.grau);
+            // console.log(sigma);
+            // main();
         }
 
 	canvas1.onclick = function(ev){ click(ev, canvas1, g_points1, 1); };
@@ -215,17 +221,17 @@ var render = function() {
     gl3.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
     /***************************/
 
-    if(g_points1.length < bsInfo1.grau + 1){
-    	gl1.drawArrays(gl1.POINTS, 0, g_points1.length);
-    }
+    // if(g_points1.length < bsInfo1.grau + 1){
+    // 	gl1.drawArrays(gl1.POINTS, 0, g_points1.length);
+    // }
 
     gl2.drawArrays(gl2.POINTS, 0, g_points2.length);
     gl3.drawArrays(gl3.TRIANGLES, 0, g_points3.length);
 
-    if (g_points1.length >= bsInfo1.grau + 1) {
-        gl1.drawArrays( gl1.POINTS, 0, bsInfo1.nPtsContr);
-        gl1.drawArrays( gl1.LINE_STRIP, bsInfo1.nPtsContr, g_points1.length - bsInfo1.nPtsContr);
-    }
+    // if (g_points1.length >= bsInfo1.grau + 1) {
+    gl1.drawArrays( gl1.POINTS, 0, bsInfo1.nPtsContr);
+    gl1.drawArrays( gl1.LINE_STRIP, bsInfo1.nPtsContr, g_points1.length - bsInfo1.nPtsContr);
+    // }
 
     requestAnimFrame(render);            
 }
@@ -240,53 +246,17 @@ function click(ev, canvas, g_points, num) {
 
 	if(num == 1){
 		g_points.splice(bsInfo1.nPtsContr, 0, vec4(x, y, 0.0, 1.0));
-        bsInfo1.nPtsContr ++;
+        bsInfo1.nPtsContr++;
 		// console.log(g_points);
+		// console.log(bsInfo1.grau);
 		if(bsInfo1.nPtsContr == bsInfo1.grau + 1){
-		    bspline_points(g_points, 3, 10);
+		    bspline_points(g_points, bsInfo1.grau, 10);
 		}
     }
 	else{
-		g_points.splice(bsInfo1.nPtsContr, 0, vec4(x, y, 0.0, 1.0));
+		g_points.splice(bsInfo2.nPtsContr, 0, vec4(x, y, 0.0, 1.0));
         bsInfo2.nPtsContr ++;
     }
 
 	createBuffers();
-}
-
-/***************** Fazer a RAGs *******************/
-
-var W=[1,1,1];
-var V=[[3,2],[4,3],[5,7]];
-
-function G (i, u) {
-  return Math.exp(-(u-0)*(u-0)/(2*sigma*sigma));
-}
-
-function g(i, u) {
-    var den = 0;
-    
-    for (var j = 0; j < V.length; j++) {
-        den += W[j] * G(j, u);
-    }
-
-    return W[i]*G(i, u)/den;
-}
-
-function Rag (u){
-
-    var point = [0,0];
-    for (var i = 0; i < V.length; i++) {
-        point[0] += V[i][0] * g(i, u);
-        point[1] += V[i][1] * g(i, u);
-    }
-    return point;
-}
-
-function main(){
-    var result = 0;
-    for (var u = 0; u < 1 ; u+=0.125){
-        result = Rag(u);
-        console.log("Result: " + result);
-    }
 }
