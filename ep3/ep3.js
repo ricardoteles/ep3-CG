@@ -1,24 +1,26 @@
+var program1, program2, program3;
 var canvas1, canvas2, canvas3;
 var gl1, gl2, gl3;
-var program1, program2, program3;
 var g_points1 = [];
 var g_points2 = [];
-var sigma = 0; 
 // var g_points3 = [];
 
-var bsInfo1 = {
-	grau: 3,
+var curva1 = {
 	nPtsContr: 0,
-	numSeg: 5
+	segmentos: 5,
+	grau: 3,
+	sigma: 0.01,
+	rag: false	
 };
-var bsInfo2 = {
-	grau: 3,
+var curva2 = {
 	nPtsContr: 0,
-	numSeg: 5
+	segmentos: 5,
+	grau: 3,
+	sigma: 0.01,
+	rag: false
 };
 
 /********************* testes ******************/
-
 var g_points3 = [
         vec4( -0.2, -0.2,  0.2, 1.0 ),
         vec4( -0.2,  0.2,  0.2, 1.0 ),
@@ -29,10 +31,7 @@ var g_points3 = [
         vec4( 0.2,  0.2, -0.2, 1.0 ),
         vec4( 0.2, -0.2, -0.2, 1.0 )
 ];
-
-
 /***********************************************/
-
 
 // transformation and projection matrices
 var modelViewMatrix, projectionMatrix;
@@ -66,87 +65,14 @@ window.onload = function init() {
 
 	initializeCanvas();		
 
-    dgPolynomial = document.getElementById("degreePolynomial");
-    stDeviation  = document.getElementById("standDeviation");
-    btnSpline    = document.getElementById("btnRadioSpline");
-    btnRag       = document.getElementById("btnRag");
-    btnOk       = document.getElementById("btnOk");
+    interface(curva1, 1);
+    interface(curva2, 2);
 
-    stDeviation.style.display = "none";
-    dgPolynomial.style.display = "block";
 
-    btnSpline.onclick = function(){
-        dgPolynomial.style.display = "block";
-        stDeviation.style.display = "none";
-    };
-
-    btnRag.onclick = function(){
-        dgPolynomial.style.display = "none";
-        stDeviation.style.display = "block";
-    };
-
-    btnOk.onclick = function(ev) {
-            //RaG(canvas1, g_points1);
-            sigma = stDeviation.value;
-            bsInfo1.grau = dgPolynomial.value;
-            console.log(bsInfo1.grau);
-            // console.log(sigma);
-            // main();
-        }
-
-	canvas1.onclick = function(ev){ click(ev, canvas1, g_points1, 1); };
-	canvas2.onclick = function(ev){ click(ev, canvas2, g_points2, 2); };
+	canvas1.onmousedown = function(ev){ click(ev, canvas1, g_points1, curva1); };
+	canvas2.onmousedown = function(ev){ click(ev, canvas2, g_points2, curva2); };
 	
 	render();
-}
-
-function initializeCanvas (){
-	canvas1 = document.getElementById( "gl-canvas1");
-	canvas2 = document.getElementById( "gl-canvas2");
-	canvas3 = document.getElementById( "gl-canvas3");
-
-	gl1 = WebGLUtils.setupWebGL( canvas1 );
-	if ( !gl1 ) { alert( "WebGL isn't available" ); }
-	gl2 = WebGLUtils.setupWebGL( canvas2 );
-	if ( !gl2 ) { alert( "WebGL isn't available" ); }
-	gl3 = WebGLUtils.setupWebGL( canvas3 );
-	if ( !gl3 ) { alert( "WebGL isn't available" ); }
-
-	gl1.viewport( 0, 0, canvas1.width, canvas1.height );
-	gl1.clearColor(0.0, 0.0, 0.0, 1.0);
-	gl2.viewport( 0, 0, canvas2.width, canvas2.height );
-	gl2.clearColor(0.0, 0.0, 0.0, 1.0);
-	gl3.viewport( 0, 0, canvas3.width, canvas3.height );
-	gl3.clearColor(0.0, 0.0, 0.0, 1.0);
-
-	gl1.enable(gl1.DEPTH_TEST);
-	gl2.enable(gl2.DEPTH_TEST);
-	gl3.enable(gl3.DEPTH_TEST);
-
-	program1 = initShaders( gl1, "vertex-shader", "fragment-shader" );
-	gl1.useProgram( program1 );
-	program2 = initShaders( gl2, "vertex-shader", "fragment-shader" );
-	gl2.useProgram( program2 );
-	program3 = initShaders( gl3, "vertex-shader", "fragment-shader" );
-	gl3.useProgram( program3 );
-
-	gl1.clear(gl1.COLOR_BUFFER_BIT);
-	gl2.clear(gl2.COLOR_BUFFER_BIT);
-	gl3.clear(gl3.COLOR_BUFFER_BIT);
-
-	createBuffers();
-
-	document.getElementById("btnReset1").onclick = function(){
-        g_points1 = [];
-		bsInfo1.nPtsContr = 0;
-    };
-    document.getElementById("btnReset2").onclick = function(){
-        g_points2 = [];
-		bsInfo2.nPtsContr = 0;
-    };
-    document.getElementById("trackBall").onclick = function(ev){
-		console.log(ev);       
-    };
 }
 
 function handleMouseDown(event) {
@@ -177,32 +103,6 @@ function RotationCamera(event) {
     lastMouseY = newY;
 }
 
-function createBuffers() {
-    var vBuffer = gl1.createBuffer();
-    gl1.bindBuffer( gl1.ARRAY_BUFFER, vBuffer );
-    gl1.bufferData( gl1.ARRAY_BUFFER, flatten(g_points1), gl1.STATIC_DRAW );
-    
-    var vPosition = gl1.getAttribLocation(program1, "vPosition");
-    gl1.vertexAttribPointer(vPosition, 4, gl1.FLOAT, false, 0, 0);
-    gl1.enableVertexAttribArray(vPosition);
-
-    var vBuffer = gl2.createBuffer();
-    gl2.bindBuffer( gl2.ARRAY_BUFFER, vBuffer );
-    gl2.bufferData( gl2.ARRAY_BUFFER, flatten(g_points2), gl2.STATIC_DRAW );
-    
-    var vPosition = gl2.getAttribLocation(program2, "vPosition");
-    gl2.vertexAttribPointer(vPosition, 4, gl2.FLOAT, false, 0, 0);
-    gl2.enableVertexAttribArray(vPosition);
-
-    var vBuffer = gl3.createBuffer();
-    gl3.bindBuffer( gl3.ARRAY_BUFFER, vBuffer );
-    gl3.bufferData( gl3.ARRAY_BUFFER, flatten(g_points3), gl3.STATIC_DRAW );
-    
-    var vPosition = gl3.getAttribLocation(program3, "vPosition");
-    gl3.vertexAttribPointer(vPosition, 4, gl3.FLOAT, false, 0, 0);
-    gl3.enableVertexAttribArray(vPosition);
-}
-
 var render = function() {
     gl1.clear( gl1.COLOR_BUFFER_BIT | gl1.DEPTH_BUFFER_BIT);        
     gl2.clear( gl2.COLOR_BUFFER_BIT | gl2.DEPTH_BUFFER_BIT);        
@@ -221,22 +121,19 @@ var render = function() {
     gl3.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
     /***************************/
 
-    // if(g_points1.length < bsInfo1.grau + 1){
-    // 	gl1.drawArrays(gl1.POINTS, 0, g_points1.length);
-    // }
+    gl1.drawArrays( gl1.POINTS, 0, curva1.nPtsContr);
+    gl1.drawArrays( gl1.LINE_STRIP, curva1.nPtsContr, g_points1.length - curva1.nPtsContr);
 
-    gl2.drawArrays(gl2.POINTS, 0, g_points2.length);
+    gl2.drawArrays( gl2.POINTS, 0, curva2.nPtsContr);
+    gl2.drawArrays( gl2.LINE_STRIP, curva2.nPtsContr, g_points2.length - curva2.nPtsContr);
+
     gl3.drawArrays(gl3.TRIANGLES, 0, g_points3.length);
 
-    // if (g_points1.length >= bsInfo1.grau + 1) {
-    gl1.drawArrays( gl1.POINTS, 0, bsInfo1.nPtsContr);
-    gl1.drawArrays( gl1.LINE_STRIP, bsInfo1.nPtsContr, g_points1.length - bsInfo1.nPtsContr);
-    // }
 
     requestAnimFrame(render);            
 }
 
-function click(ev, canvas, g_points, num) {
+function click(ev, canvas, g_points, curva) {
 	var x = ev.clientX;
 	var y = ev.clientY;
 	var rect = ev.target.getBoundingClientRect() ;
@@ -244,19 +141,55 @@ function click(ev, canvas, g_points, num) {
 	x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
 	y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
 
-	if(num == 1){
-		g_points.splice(bsInfo1.nPtsContr, 0, vec4(x, y, 0.0, 1.0));
-        bsInfo1.nPtsContr++;
-		// console.log(g_points);
-		// console.log(bsInfo1.grau);
-		if(bsInfo1.nPtsContr == bsInfo1.grau + 1){
-		    bspline_points(g_points, bsInfo1.grau, 10);
-		}
-    }
-	else{
-		g_points.splice(bsInfo2.nPtsContr, 0, vec4(x, y, 0.0, 1.0));
-        bsInfo2.nPtsContr ++;
-    }
+ 	selecionaPonto(x,y,g_points, curva, ev, canvas);
+
+	if(curva.nPtsContr == (curva.grau + 1) && !curva.rag){
+	    bSpline(g_points, curva.grau, curva.segmentos);
+	}
+	if (curva.nPtsContr == (curva.grau + 1) && curva.rag){
+		alert("Sou rag");
+	}
 
 	createBuffers();
+}
+
+function selecionaPonto(x, y, g_points, curva, ev,canvas){
+    var selecionou = false;
+
+    for(var i = 0; i < g_points.length; i++){
+        if((x >= g_points[i][0]-0.03 && x <= g_points[i][0]+0.03) && 
+            (y >= g_points[i][1]-0.03 && y <= g_points[i][1]+0.03)){
+            console.log("Clicou em cima");
+            selecionou = true;
+            moverPonto(i, g_points, curva, ev, canvas);
+            //g_points.splice(i, 1);   // tira o ponto do g_points
+        	break;
+        }
+    }
+
+    if(!selecionou){
+		g_points.splice(curva.nPtsContr, 0, vec4(x, y, 0.0, 1.0));
+	    curva.nPtsContr++;
+    }
+}
+
+function moverPonto(i, g_points, curva, evento, canvas){
+	canvas.onmousemove = function(ev){
+		var x = ev.clientX;
+		var y = ev.clientY;
+		var rect = ev.target.getBoundingClientRect() ;
+
+		x = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
+		y = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
+
+
+		g_points[i][0] = x;
+		g_points[i][1] = y;
+
+		createBuffers();
+
+		canvas.onmouseup = function(){
+			ev.target.onmousemove = null;
+		}
+	}
 }

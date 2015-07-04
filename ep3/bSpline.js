@@ -1,50 +1,43 @@
-function funcaoBase(k, i, u, t) {
-
-	if (k == 1) {
-		if (u[i] <= t && t < u[i+1]) 
+function funcaoBase(grau, k, nos, t) {
+	if (grau == 0) {
+		if (nos[k] <= t && t < nos[k+1]) 
 			return 1.0;
 		else 
 			return 0.0;
 	}
 
-	var den1 = u[i+k-1] - u[i];
-	var den2 = u[i+k] - u[i+1];
-	var fator1 = 0;
-	var fator2 = 0;
+	if((k+grau+1) < nos.length){
+		var frac1 = (t - nos[k]) / (nos[k+grau] - nos[k]);
+		var frac2 = (nos[k+grau+1]-t) / (nos[k+grau+1] - nos[k+1]);
 
-	if (den1 > 0) {
-		fator1 = ((t - u[i]) / den1) * funcaoBase(k-1, i, u, t);
+		return soma = frac1*funcaoBase(grau-1,k,nos,t) + frac2*funcaoBase(grau-1,k+1,nos,t);			
 	}
-	if (den2 > 0) {
-		fator2 = ((u[i+k] - t) / den2) * funcaoBase(k-1, i+1, u, t);
+	else{
+		return 0.0;
 	}
-	return fator1 + fator2;
 }
 
-function curvaBspline(pontosControle, grau, t, u) {
-	var ponto = [0.0, 0.0];
+function bSpline(pontosControle, grau, segmentos) {	
+ 	var nos = [];
+
+ 	var qtdadeNos = grau + pontosControle.length;
+
+ 	// cria nos
+	for (var j = 0; j <= qtdadeNos; j++) {
+		nos.push(j);
+	}
 	
-	for(var i = 0; i < pontosControle.length; i++) {
-		var b = funcaoBase(grau+1, i, u, t);
-		ponto[0] += b * pontosControle[i][0];
-		ponto[1] += b * pontosControle[i][1];			
-	}
-
-	return vec4(ponto[0], ponto[1], 0.0, 1.0);	
-}
-
-function bspline_points(pontosControle, grau, segmentos) {	
- 	var u = [];
-
- 	var m = grau + pontosControle.length;
-
-	for (var i = 0; i <= m; i++) {
-		u.push(i/m);
-	}
+	var passo = (nos[qtdadeNos-1] - nos[0])/segmentos;
 		
-	for (var i = 0; i <= segmentos; i++) {
-		var t = i/segmentos;
-		var p = curvaBspline(pontosControle, grau, t, u);
-		g_points1.push(p);
+	for(var t = nos[0]; t < nos[qtdadeNos-1]; t+= passo){
+		var p = [0.0, 0.0];
+
+		for(var k = 0; k < pontosControle.length; k++){
+			p[0] += pontosControle[k][0]*funcaoBase(grau, k, nos, t);
+			p[1] += pontosControle[k][1]*funcaoBase(grau, k, nos, t);
+			// console.log(pontosControle[k][0]);
+		}
+
+		pontosControle.push(vec4(p[0], p[1], 0.0, 1.0));
 	}
- }
+}
